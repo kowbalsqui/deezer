@@ -19,3 +19,19 @@ export const useUserStore = defineStore('user', {
     },
   },
 });
+
+export const useCounterStore = defineStore('counter', {
+  state: () => ({
+    playList: [],
+  }),
+  getters: {
+    playListTotal: (state) => state.playList.length
+  },
+  actions: {
+    setAddSong(newSong) {
+      id = newSong.id;
+      name = newSong.name;
+      this.playList.push(id, name);
+    }
+  }
+})
