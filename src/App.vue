@@ -1,7 +1,7 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import Menu from "./components/menu.vue";
-
+import { RouterLink, RouterView } from 'vue-router';
+import Menu from './components/menu.vue';
+import Carousel from './components/carrusel.vue';
 </script>
 
 <template>
@@ -16,6 +16,9 @@ import Menu from "./components/menu.vue";
     <!-- Menu -->
     <Menu />
 
+    <!-- Carousel -->
+    <Carousel />
+
     <!-- Main Content -->
     <main class="container my-4">
       <router-view />
@@ -28,28 +31,21 @@ import Menu from "./components/menu.vue";
   </div>
 </template>
 
-<script setup>
-
-</script>
-
-
 <style lang="scss">
-nav{
+nav {
   border: 1px solid gray;
 }
 $hover-bg-color: #007bff;
 $hover-text-color: #ffffff;
 li {
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
 
-    &:hover {
-      background-color: $hover-bg-color;
-      color: $hover-text-color;
-      font-weight: bold;
-    }
+  &:hover {
+    background-color: $hover-bg-color;
+    color: $hover-text-color;
+    font-weight: bold;
   }
-
-
+}
 </style>

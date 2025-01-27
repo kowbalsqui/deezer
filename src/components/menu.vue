@@ -24,6 +24,7 @@
             <li class="nav-item">
               <router-link class="nav-link" to="/search">Buscador</router-link>
             </li>
+
           </ul>
         </div>
       </div>

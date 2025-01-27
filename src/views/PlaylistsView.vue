@@ -1,34 +1,77 @@
+<!-- Pinia.vue -->
 <template>
-    <div>
-      <h1>Playlists</h1>
-      <p>Gestiona tus playlists aquí.</p>
+  <div>
+    <h1>Mi Playlist</h1>
+    <div class="playlist" v-if="playlist.length > 0">
+      <div v-for="song in playlist" :key="song.id" class="playlist-item">
+        <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
+        <div class="song-details">
+          <strong>{{ song.title }}</strong>
+          <p>{{ song.artist.name }}</p>
+          <p>{{ song.album.title }}</p>
+          <button @click="removeSongFromPlaylist(song.id)">Eliminar</button>
+        </div>
+      </div>
     </div>
-  <!-- Integrar el componente Pinia -->
-  <PiniaComponent />
-    <!-- Mostrar datos de la store directamente -->
-    <div class="store-data">
-      <h3>Datos desde la Store:</h3>
-      <p>Email actual: {{ userEmail }}</p>
-      <p>Dominio del email: {{ emailDomain }}</p>
-    </div>
-      
-  </template>
-  
-  <script setup>
-  // Accede a la store
+    <p v-else>No hay canciones en la playlist</p>
+  </div>
+</template>
+
+<script setup>
 import { computed } from 'vue';
-import { useUserStore } from '../stores/email';
-import PiniaComponent from '../components/pinia.vue';
-// Vincula datos de la store
-const userStore = useUserStore();
+import { useFavoritesStore } from "../stores/favorito.js"; // Importa el store de favoritos
 
-const userEmail = computed(() => userStore.email);
-const emailDomain = computed(() => userStore.emailDomain);
+const favoritesStore = useFavoritesStore(); // Instancia del store de favoritos
 
-  </script>
-  
-  <style scoped>
-  h1 {
-    color: #28a745;
-  }
-  </style>
+const playlist = computed(() => favoritesStore.playlist); // Computed property para la playlist
+
+// Función para eliminar una canción de la playlist
+const removeSongFromPlaylist = (songId) => {
+  favoritesStore.removeSong(songId);
+  console.log(`Canción con ID ${songId} eliminada de la playlist`);
+};
+</script>
+
+<style scoped>
+.playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  width: 100%;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.album-cover {
+  width: 60px;
+  height: auto;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.song-details {
+  flex: 1;
+}
+
+button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #c82333;
+}
+</style>
