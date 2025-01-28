@@ -16,8 +16,7 @@ import Carousel from './components/carrusel.vue';
     <!-- Menu -->
     <Menu />
 
-    <!-- Carousel -->
-    <Carousel />
+    
 
     <!-- Main Content -->
     <main class="container my-4">

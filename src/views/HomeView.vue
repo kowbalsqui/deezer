@@ -1,79 +1,126 @@
 <template>
+  <!-- Carousel -->
+  <carrusel />
   <div class="container">
-  <h1>Home</h1>
-  <p>Bienvenido a la aplicación Deezer Music Client.</p>
-  <p>Este proyecto sirve de base para la aplicación a desarrollar como tarea del curso.</p>
-  <p>Para facilitar el desarrollo, este proyecto ya viene configurado con Bootstrap, Bootstrap Icons, SASS, router y Pinia.</p>
-</div>
-<div class="row">
-  <div class="col-md-6">
-    <h1>Bootstrap Icons</h1>
-    <p>
-      Bootstrap Icons es una biblioteca de iconos creada por el equipo de Bootstrap. Proporciona una colección de iconos SVG gratuitos y de código abierto que se pueden utilizar fácilmente en proyectos web.
-    </p>
-    <div class="text-bg-light p-3 border">
-      <i class="bi bi-alarm" style="font-size: 2rem; color: cornflowerblue;"></i>
-      <code>&lt;i class="bi bi-alarm" style="font-size: 2rem; color: cornflowerblue;"&gt;&lt;/i&gt;</code>
-      <br>
-      <i class="bi bi-battery-half" style="font-size: 2rem; color: darkorange;"></i>
-      <code>&lt;i class="bi bi-battery-half" style="font-size: 2rem; color: darkorange;"&gt;&lt;/i&gt;</code>
-      <br>
-      <i class="bi bi-cloud-sun" style="font-size: 2rem; color: gold;"></i>
-      <code>&lt;i class="bi bi-cloud-sun" style="font-size: 2rem; color: gold;"&gt;&lt;/i&gt;</code>
-      <br>
-      <i class="bi bi-emoji-smile" style="font-size: 2rem; color: green;"></i>
-      <code>&lt;i class="bi bi-emoji-smile" style="font-size: 2rem; color: green;"&gt;&lt;/i&gt;</code>
-      <p>Puedes encontrar la lista completa de iconos en <a href="https://icons.getbootstrap.com/">su web oficial.</a></p>
+    <!-- Buscador de Canciones -->
+    <div class="search-bar">
+      <input v-model="searchQuery" @keyup.enter="buscarCanciones" placeholder="Buscar canciones..." />
+      <button @click="buscarCanciones">Buscar</button>
     </div>
-  </div>
-  <div class="col-md-6 sass-example">
-    <h1>SASS</h1>
-    <p>SASS (Syntactically Awesome Stylesheets) es un preprocesador de CSS que permite escribir hojas de estilo de una manera más eficiente y organizada.</p>
-    <p>Este proyecto ya viene configurado con SASS, por lo que puedes empezar a utilizarlo en tus estilos de inmediato.</p>
-    <p class="psass" data-v-inspector="src/views/HomeView.vue:37:7">SASS es un preprocesador CSS que agrega características como:</p>
-    <ul data-v-inspector="src/views/HomeView.vue:39:5">
-      <li data-v-inspector="src/views/HomeView.vue:40:7">Anidación de estilos</li>
-      <li data-v-inspector="src/views/HomeView.vue:41:7">Variables</li>
-      <li data-v-inspector="src/views/HomeView.vue:42:7">Mixins</li>
-      <li data-v-inspector="src/views/HomeView.vue:43:7">Herencia</li>
-    </ul>
-  </div>
-</div>
 
+    <!-- Resultados de la Búsqueda -->
+    <div v-if="searchResults.length > 0" class="search-results">
+      <h2>Resultados de la Búsqueda</h2>
+      <div class="playlist">
+        <div v-for="song in searchResults" :key="song.id" class="playlist-item">
+          <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
+          <div class="song-details">
+            <strong>{{ song.title }}</strong>
+            <p>{{ song.artist.name }}</p>
+            <p>{{ song.album.title }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 9 Canciones Más Escuchadas -->
+    <h1>Top 9 Canciones Más Escuchadas</h1>
+    <div class="playlist" v-if="topSongs.length > 0">
+      <div v-for="song in topSongs" :key="song.id" class="playlist-item">
+        <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
+        <div class="song-details">
+          <strong>{{ song.title }}</strong>
+          <p>{{ song.artist.name }}</p>
+          <p>{{ song.album.title }}</p>
+        </div>
+      </div>
+    </div>
+    <p v-else>No hay canciones disponibles</p>
+  </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import carrusel from '../components/carrusel.vue';
+import { useFavoritesStore } from '../stores/favorito.js'; // Importa el store de favoritos
+
+const searchQuery = ref('');
+const topSongs = ref([]);
+const searchResults = ref([]);
+const favoritesStore = useFavoritesStore(); // Instancia del store de favoritos
+
+// Función para buscar canciones
+const buscarCanciones = async () => {
+  try {
+    const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${searchQuery.value}`);
+    searchResults.value = response.data.data;
+  } catch (error) {
+    console.error('Error al buscar las canciones:', error);
+  }
+};
+
+// Función para obtener las 9 canciones más escuchadas
+const fetchTopSongs = async () => {
+  try {
+    const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`);
+    topSongs.value = response.data.tracks.data.slice(0, 9);
+  } catch (error) {
+    console.error('Error al cargar las canciones:', error);
+  }
+};
+
+onMounted(fetchTopSongs);
+</script>
 
 <style scoped>
-h1 {
+h1, h2 {
   color: #007bff;
 }
-.sass-example {
-  .psass {
-    font-size: 16px;
-    line-height: 1.5;
-    color: #333;
-    padding: 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-
-    ul {
-      margin-top: 10px;
-      padding-left: 20px;
-      list-style-type: square;
-
-      li {
-        margin-bottom: 5px;
-        color: #555;
-        font-weight: bold;
-
-        &:hover {
-          color: #007bff; 
-          text-decoration: underline;
-        }
-      }
-    }
-  }
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
-
+.search-bar input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.search-bar button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.playlist {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+}
+.playlist-item {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  width: 100%;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+.album-cover {
+  width: 60px;
+  height: auto;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+.song-details {
+  flex: 1;
+}
+.search-results {
+  margin-bottom: 40px;
+}
 </style>
