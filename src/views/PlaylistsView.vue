@@ -8,47 +8,111 @@
           <strong>{{ song.title }}</strong>
           <p>{{ song.artist.name }}</p>
           <p>{{ song.album.title }}</p>
-          <button @click="removeSongFromPlaylist(song.id)">Eliminar</button>
-          <button class="play-button" @click="playPreview(song)">Escuchar Preview</button>
+          <button @click="removeSongFromPlaylist(song.id)" class="btn-delete">Eliminar</button>
+          <button class="btn-play" @click="playPreview(song)">Escuchar Preview</button>
         </div>
       </div>
     </div>
     <p v-else>No hay canciones en la playlist</p>
-    
+
+    <!-- Reproductor Mejorado -->
     <div v-if="currentSong" class="music-player">
       <img :src="currentSong.album.cover" alt="Portada del álbum" class="player-cover" />
       <div class="player-details">
         <strong>{{ currentSong.title }}</strong>
         <p>{{ currentSong.artist.name }}</p>
       </div>
-      <audio :src="currentSong.preview" controls></audio>
+      
+      <!-- Controles -->
+      <div class="player-controls">
+        <button @click="prevSong">⏮</button>
+        <button @click="togglePlay">{{ isPlaying ? '⏸' : '▶' }}</button>
+        <button @click="nextSong">⏭</button>
+      </div>
+
+      <!-- Barra de Progreso -->
+      <input type="range" v-model="progress" @input="seekAudio" class="progress-bar" />
+
+      <!-- Control de Volumen -->
+      <input type="range" min="0" max="1" step="0.1" v-model="volume" @input="setVolume" class="volume-bar" />
+
+      <audio ref="audioPlayer" :src="currentSong.preview" @timeupdate="updateProgress" @ended="nextSong" controls></audio>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { useFavoritesStore } from "../stores/favorito.js"; // Importa el store de favoritos
+import { computed, ref, watch } from 'vue';
+import { useFavoritesStore } from "../stores/favorito.js"; 
 
-const favoritesStore = useFavoritesStore(); // Instancia del store de favoritos
+const favoritesStore = useFavoritesStore(); 
+const playlist = computed(() => favoritesStore.playlist); 
 
-const playlist = computed(() => favoritesStore.playlist); // Computed property para la playlist
+const currentSong = ref(null);
+const isPlaying = ref(false);
+const progress = ref(0);
+const volume = ref(1);
+const audioPlayer = ref(null);
 
-const currentSong = ref(null); // Ref para la canción actual
-
-// Función para eliminar una canción de la playlist
 const removeSongFromPlaylist = (songId) => {
   favoritesStore.removeSong(songId);
-  console.log(`Canción con ID ${songId} eliminada de la playlist`);
 };
 
-// Función para reproducir la vista previa de la canción
 const playPreview = (song) => {
   currentSong.value = song;
+  isPlaying.value = true;
+  setTimeout(() => {
+    audioPlayer.value.play();
+  }, 100);
 };
+
+const togglePlay = () => {
+  if (audioPlayer.value.paused) {
+    audioPlayer.value.play();
+    isPlaying.value = true;
+  } else {
+    audioPlayer.value.pause();
+    isPlaying.value = false;
+  }
+};
+
+const updateProgress = () => {
+  progress.value = (audioPlayer.value.currentTime / audioPlayer.value.duration) * 100;
+};
+
+const seekAudio = () => {
+  audioPlayer.value.currentTime = (progress.value / 100) * audioPlayer.value.duration;
+};
+
+const setVolume = () => {
+  audioPlayer.value.volume = volume.value;
+};
+
+const nextSong = () => {
+  const currentIndex = playlist.value.findIndex(song => song.id === currentSong.value.id);
+  if (currentIndex < playlist.value.length - 1) {
+    playPreview(playlist.value[currentIndex + 1]);
+  }
+};
+
+const prevSong = () => {
+  const currentIndex = playlist.value.findIndex(song => song.id === currentSong.value.id);
+  if (currentIndex > 0) {
+    playPreview(playlist.value[currentIndex - 1]);
+  }
+};
+
+watch(currentSong, (newSong) => {
+  if (newSong) {
+    setTimeout(() => {
+      audioPlayer.value.play();
+    }, 100);
+  }
+});
 </script>
 
 <style scoped>
+/* Estilos de la playlist */
 .playlist {
   display: flex;
   flex-direction: column;
@@ -63,6 +127,7 @@ const playPreview = (song) => {
   border-radius: 10px;
   padding: 10px;
   width: 100%;
+  background: white;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -80,7 +145,7 @@ const playPreview = (song) => {
   gap: 10px;
 }
 
-button {
+.btn-delete {
   background-color: #dc3545;
   color: white;
   border: none;
@@ -90,34 +155,40 @@ button {
   transition: background-color 0.2s;
 }
 
-button:hover {
+.btn-delete:hover {
   background-color: #c82333;
 }
 
-.play-button {
-  background-color: #007bff; /* Azul */
+.btn-play {
+  background-color: #007bff;
 }
 
-.play-button:hover {
-  background-color: #0056b3; /* Azul más oscuro */
+.btn-play:hover {
+  background-color: #0056b3;
 }
 
+/* Estilos del reproductor */
 .music-player {
-  margin-top: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #f8f8f8;
+  position: fixed;
+  bottom: 50px; /* Justo encima del footer */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 800px;
+  background: #222; /* Fondo oscuro para que combine con el footer */
+  color: white;
   display: flex;
   align-items: center;
-  gap: 20px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  padding: 10px 20px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
 }
 
 .player-cover {
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
 }
 
 .player-details {
@@ -125,8 +196,30 @@ button:hover {
   text-align: left;
 }
 
-audio {
-  width: 100%;
-  max-width: 600px;
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar, .volume-bar {
+  width: 100px;
+  background-color: #007bff;
+}
+
+.progress-bar::-webkit-slider-runnable-track {
+  background: #007bff;
+  height: 5px;
+  border-radius: 10px;
+}
+
+.progress-bar::-webkit-slider-thumb {
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volume-bar {
+  width: 80px;
 }
 </style>

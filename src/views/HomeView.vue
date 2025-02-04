@@ -23,9 +23,9 @@
       </div>
     </div>
 
-    <!-- Top 9 Canciones Más Escuchadas -->
-    <h1>Top 9 Canciones Más Escuchadas</h1>
-    <div class="playlist" v-if="topSongs.length > 0">
+    <!-- Top 8 Canciones Más Escuchadas -->
+    <h1>Top 8 Canciones Más Escuchadas</h1>
+    <div class="playlist" v-if="topSongs.length > 0" style="display: grid; grid-template-columns: repeat(4, 1fr);">
       <div v-for="song in topSongs" :key="song.id" class="playlist-item">
         <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
         <div class="song-details">
@@ -64,7 +64,7 @@ const buscarCanciones = async () => {
 const fetchTopSongs = async () => {
   try {
     const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`);
-    topSongs.value = response.data.tracks.data.slice(0, 9);
+    topSongs.value = response.data.tracks.data.slice(0, 8);
   } catch (error) {
     console.error('Error al cargar las canciones:', error);
   }
