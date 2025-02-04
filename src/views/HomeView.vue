@@ -1,7 +1,8 @@
 <template>
-  <!-- Carousel -->
-  <carrusel />
   <div class="container">
+    <!-- Carousel -->
+    <carrusel />
+
     <!-- Buscador de Canciones -->
     <div class="search-bar">
       <input v-model="searchQuery" @keyup.enter="buscarCanciones" placeholder="Buscar canciones..." />
@@ -25,7 +26,7 @@
 
     <!-- Top 8 Canciones Más Escuchadas -->
     <h1>Top 8 Canciones Más Escuchadas</h1>
-    <div class="playlist" v-if="topSongs.length > 0" style="display: grid; grid-template-columns: repeat(4, 1fr);">
+    <div class="playlist" v-if="topSongs.length > 0">
       <div v-for="song in topSongs" :key="song.id" class="playlist-item">
         <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
         <div class="song-details">
@@ -55,7 +56,11 @@ const favoritesStore = useFavoritesStore();
 
 const buscarCanciones = async () => {
   try {
-    const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${searchQuery.value}`);
+    const response = await axios.get(`http://localhost:8080/https://api.deezer.com/search?q=${searchQuery.value}`, {
+      headers: {
+        'x-requested-with': 'XMLHttpRequest'
+      }
+    });
     searchResults.value = response.data.data;
   } catch (error) {
     console.error('Error al buscar las canciones:', error);
@@ -64,7 +69,11 @@ const buscarCanciones = async () => {
 
 const fetchTopSongs = async () => {
   try {
-    const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`);
+    const response = await axios.get(`http://localhost:8080/https://api.deezer.com/chart`, {
+      headers: {
+        'x-requested-with': 'XMLHttpRequest'
+      }
+    });
     topSongs.value = response.data.tracks.data.slice(0, 8);
   } catch (error) {
     console.error('Error al cargar las canciones:', error);
@@ -85,20 +94,32 @@ onMounted(fetchTopSongs);
 </script>
 
 <style scoped>
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 h1, h2 {
   color: #007bff;
+  text-align: center;
 }
+
 .search-bar {
   display: flex;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
 }
+
 .search-bar input {
   flex: 1;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  max-width: 500px;
 }
+
 .search-bar button {
   padding: 10px 20px;
   border: none;
@@ -107,13 +128,15 @@ h1, h2 {
   border-radius: 5px;
   cursor: pointer;
 }
-.song-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+
+.playlist {
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
   justify-content: center;
 }
-.song-card {
+
+.playlist-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -122,15 +145,25 @@ h1, h2 {
   padding: 15px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   background: white;
+  max-width: 250px; /* Incremento del ancho */
 }
+
 .album-cover {
-  width: 100px;
+  width: 100%;
   height: auto;
   border-radius: 10px;
+  margin-bottom: 10px;
 }
+
 .song-details {
   text-align: center;
 }
+
+.song-details strong {
+  display: block;
+  margin-bottom: 5px;
+}
+
 button {
   margin-top: 10px;
   padding: 5px 10px;
@@ -139,5 +172,10 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #0056b3;
 }
 </style>
