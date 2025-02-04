@@ -32,6 +32,9 @@
           <strong>{{ song.title }}</strong>
           <p>{{ song.artist.name }}</p>
           <p>{{ song.album.title }}</p>
+          <p>{{ formatDuration(song.duration) }}</p>
+          <audio :src="song.preview" controls></audio>
+          <button @click="addSongToPlaylist(song)">Añadir canción</button>
         </div>
       </div>
     </div>
@@ -43,14 +46,13 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import carrusel from '../components/carrusel.vue';
-import { useFavoritesStore } from '../stores/favorito.js'; // Importa el store de favoritos
+import { useFavoritesStore } from '../stores/favorito.js';
 
 const searchQuery = ref('');
 const topSongs = ref([]);
 const searchResults = ref([]);
-const favoritesStore = useFavoritesStore(); // Instancia del store de favoritos
+const favoritesStore = useFavoritesStore();
 
-// Función para buscar canciones
 const buscarCanciones = async () => {
   try {
     const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/search?q=${searchQuery.value}`);
@@ -60,7 +62,6 @@ const buscarCanciones = async () => {
   }
 };
 
-// Función para obtener las 9 canciones más escuchadas
 const fetchTopSongs = async () => {
   try {
     const response = await axios.get(`https://cors-anywhere.herokuapp.com/https://api.deezer.com/chart`);
@@ -68,6 +69,16 @@ const fetchTopSongs = async () => {
   } catch (error) {
     console.error('Error al cargar las canciones:', error);
   }
+};
+
+const formatDuration = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return `${minutes}:${sec.toString().padStart(2, '0')}`;
+};
+
+const addSongToPlaylist = (song) => {
+  favoritesStore.addSong(song);
 };
 
 onMounted(fetchTopSongs);
@@ -96,31 +107,37 @@ h1, h2 {
   border-radius: 5px;
   cursor: pointer;
 }
-.playlist {
-  display: flex;
-  flex-direction: column;
+.song-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   justify-content: center;
 }
-.playlist-item {
+.song-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 10px;
-  width: 100%;
+  padding: 15px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  background: white;
 }
 .album-cover {
-  width: 60px;
+  width: 100px;
   height: auto;
   border-radius: 10px;
-  margin-right: 20px;
 }
 .song-details {
-  flex: 1;
+  text-align: center;
 }
-.search-results {
-  margin-bottom: 40px;
+button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>
