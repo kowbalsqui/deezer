@@ -2,7 +2,8 @@
   <div class="container">
     <!-- Carousel -->
     <carrusel />
-
+    <br>
+    <br>
     <!-- Buscador de Canciones -->
     <div class="search-bar">
       <input v-model="searchQuery" @keyup.enter="buscarCanciones" placeholder="Buscar canciones..." />
@@ -14,7 +15,7 @@
       <h2>Resultados de la Búsqueda</h2>
       <div class="playlist">
         <div v-for="song in searchResults" :key="song.id" class="playlist-item">
-          <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
+          <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" loading="lazy" />
           <div class="song-details">
             <strong>{{ song.title }}</strong>
             <p>{{ song.artist.name }}</p>
@@ -24,35 +25,46 @@
       </div>
     </div>
 
-    <!-- Top 8 Canciones Más Escuchadas -->
-    <h1>Top 8 Canciones Más Escuchadas</h1>
-    <div class="playlist" v-if="topSongs.length > 0">
-      <div v-for="song in topSongs" :key="song.id" class="playlist-item">
-        <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
-        <div class="song-details">
-          <strong>{{ song.title }}</strong>
-          <p>{{ song.artist.name }}</p>
-          <p>{{ song.album.title }}</p>
-          <p>{{ formatDuration(song.duration) }}</p>
-          <audio :src="song.preview" controls></audio>
-          <button @click="addSongToPlaylist(song)">Añadir canción</button>
+    <!-- Top 5 Álbumes Más Escuchados -->
+    <h1>Top Álbumes Más Escuchados</h1>
+    <div class="grid">
+      <div v-for="album in topAlbums" :key="album.id" class="grid-item">
+        <img :src="album.cover" alt="Portada del álbum" class="album-cover" loading="lazy" />
+        <div class="album-details">
+          <strong>{{ album.title }}</strong>
+          <p>{{ album.artist.name }}</p>
         </div>
       </div>
     </div>
-    <p v-else>No hay canciones disponibles</p>
+
+    <br>
+
+    <!-- Top 5 Artistas Más Escuchados -->
+    <h2>Top Artistas Más Escuchados</h2>
+    <div class="grid">
+      <div v-for="artist in topArtists" :key="artist.id" class="grid-item" @click="verArtista(artist.id)">
+        <img :src="artist.picture" alt="Imagen del artista" class="artist-picture" loading="lazy" />
+        <div class="artist-details">
+          <strong>{{ artist.name }}</strong>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import carrusel from '../components/carrusel.vue';
 import { useFavoritesStore } from '../stores/favorito.js';
 
 const searchQuery = ref('');
-const topSongs = ref([]);
+const topAlbums = ref([]);
+const topArtists = ref([]);
 const searchResults = ref([]);
 const favoritesStore = useFavoritesStore();
+const router = useRouter();
 
 const buscarCanciones = async () => {
   try {
@@ -64,33 +76,30 @@ const buscarCanciones = async () => {
     searchResults.value = response.data.data;
   } catch (error) {
     console.error('Error al buscar las canciones:', error);
+    alert('Hubo un problema al buscar las canciones. Por favor, inténtalo de nuevo más tarde.');
   }
 };
 
-const fetchTopSongs = async () => {
+const fetchTopAlbumsAndArtists = async () => {
   try {
     const response = await axios.get(`http://localhost:8080/https://api.deezer.com/chart`, {
       headers: {
         'x-requested-with': 'XMLHttpRequest'
       }
     });
-    topSongs.value = response.data.tracks.data.slice(0, 8);
+    topAlbums.value = response.data.albums.data.slice(0, 5);
+    topArtists.value = response.data.artists.data.slice(0, 5);
   } catch (error) {
-    console.error('Error al cargar las canciones:', error);
+    console.error('Error al cargar los álbumes y artistas:', error);
+    alert('Hubo un problema al cargar los álbumes y artistas. Por favor, inténtalo de nuevo más tarde.');
   }
 };
 
-const formatDuration = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  const sec = seconds % 60;
-  return `${minutes}:${sec.toString().padStart(2, '0')}`;
+const verArtista = (artistId) => {
+  router.push({ name: 'Artist', params: { id: artistId } });
 };
 
-const addSongToPlaylist = (song) => {
-  favoritesStore.addSong(song);
-};
-
-onMounted(fetchTopSongs);
+onMounted(fetchTopAlbumsAndArtists);
 </script>
 
 <style scoped>
@@ -103,6 +112,7 @@ onMounted(fetchTopSongs);
 h1, h2 {
   color: #007bff;
   text-align: center;
+  font-family: 'Arial', sans-serif;
 }
 
 .search-bar {
@@ -118,6 +128,7 @@ h1, h2 {
   border: 1px solid #ccc;
   border-radius: 5px;
   max-width: 500px;
+  font-size: 16px;
 }
 
 .search-bar button {
@@ -127,16 +138,17 @@ h1, h2 {
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
 }
 
-.playlist {
+.grid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 20px;
   justify-content: center;
 }
 
-.playlist-item {
+.grid-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -145,7 +157,13 @@ h1, h2 {
   padding: 15px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   background: white;
-  max-width: 250px; /* Incremento del ancho */
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.grid-item:hover {
+  transform: scale(1.05);
+  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .album-cover {
@@ -153,29 +171,39 @@ h1, h2 {
   height: auto;
   border-radius: 10px;
   margin-bottom: 10px;
+  transition: transform 0.2s;
 }
 
-.song-details {
+.grid-item:hover .album-cover {
+  transform: scale(1.05);
+}
+
+.artist-picture {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  transition: transform 0.2s;
+}
+
+.grid-item:hover .artist-picture {
+  transform: scale(1.05);
+}
+
+.album-details, .artist-details {
   text-align: center;
+  font-family: 'Arial', sans-serif;
 }
 
-.song-details strong {
+.album-details strong, .artist-details strong {
   display: block;
   margin-bottom: 5px;
+  font-size: 18px;
+  color: #333;
 }
 
-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:hover {
-  background-color: #0056b3;
+.artist-details strong {
+  font-size: 16px;
 }
 </style>
