@@ -1,10 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 
 import HomeView from '../views/HomeView.vue';
 import PlaylistsView from '../views/PlaylistsView.vue';
 import SearchView from '../views/SearchView.vue';
 import ArtistView from '../views/ArtistView.vue';
-import SongDetailsView from '../views/SongDetailsView.vue'; // Importamos SongDetailsView
+import SongDetailsView from '../views/SongDetailsView.vue';
+import AlbumDetailsView from '../views/AlbumDetailsView.vue'; // Importa la vista de detalles del álbum
 
 const routes = [
   {
@@ -23,7 +24,7 @@ const routes = [
     component: SearchView,
   },
   {
-    path: '/song/:id',  // Nueva ruta para ver los detalles de una canción
+    path: '/song/:id',
     name: 'SongDetails',
     component: SongDetailsView,
   },
@@ -31,6 +32,11 @@ const routes = [
     path: '/artist/:id',
     name: 'Artist',
     component: ArtistView,
+  },
+  {
+    path: '/album/:id',
+    name: 'AlbumDetails',
+    component: AlbumDetailsView
   },
 ];
 
@@ -40,3 +46,4 @@ const router = createRouter({
 });
 
 export default router;
+

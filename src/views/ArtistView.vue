@@ -1,116 +1,94 @@
+<script setup>
+import { useRoute, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+const route = useRoute();
+const router = useRouter();
+const artist = ref(null);
+const songs = ref([]);
+
+const fetchArtistDetails = async () => {
+  try {
+    const response = await axios.get(`http://localhost:8080/https://api.deezer.com/artist/${route.params.id}`);
+    artist.value = response.data;
+    
+    const songResponse = await axios.get(`http://localhost:8080/https://api.deezer.com/artist/${route.params.id}/top?limit=10`);
+    songs.value = songResponse.data.data;
+  } catch (error) {
+    console.error('Error al cargar el artista:', error);
+    alert('Hubo un problema al cargar los detalles del artista.');
+  }
+};
+
+const viewSongDetails = (song) => {
+  router.push({
+    name: 'SongDetails',
+    params: { id: song.id },
+    query: { title: song.title, cover: song.album.cover, artist: artist.value.name }
+  });
+};
+
+onMounted(fetchArtistDetails);
+</script>
+
 <template>
-    <div class="artist-page" v-if="artist">
-      <img :src="artist.picture_big" alt="Imagen del artista" class="artist-image" />
-      <div class="artist-details">
-        <strong>{{ artist.name }}</strong>
-        <p>Seguidores: {{ artist.nb_fan }}</p>
-        <p>Álbumes: {{ artist.nb_album }}</p>
-      </div>
-  
-      <h2>Álbumes más populares</h2>
-      <div class="albums-container" v-if="albums.length > 0">
-        <div v-for="album in albums.slice(0, 5)" :key="album.id" class="album-card">
-          <img :src="album.cover_medium" alt="Portada del álbum" class="album-cover" />
-          <p>{{ album.title }}</p>
+  <div v-if="artist" class="artist-details">
+    <h1>{{ artist.name }}</h1>
+    <img :src="artist.picture_big" alt="Imagen del artista" class="artist-image" />
+    
+    <div class="song-list">
+      <h2>Canciones Populares</h2>
+      <div class="song-grid">
+        <div v-for="song in songs" :key="song.id" class="song-item" @click="viewSongDetails(song)" style="cursor: pointer;">
+          <img :src="song.album.cover" alt="Portada del álbum" class="song-cover" />
+          <p><strong>{{ song.title }}</strong></p>
         </div>
       </div>
-      <p v-else>No hay álbumes para mostrar</p>
     </div>
-    <p v-else>Cargando...</p>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRoute } from 'vue-router';
-  import axios from 'axios';
-  
-  const route = useRoute();
-  const artist = ref(null);
-  const albums = ref([]);
-  
-  const obtenerDatosDelArtista = async (artistId) => {
-    try {
-      // Obtener detalles del artista
-      const artistResponse = await axios.get(`http://localhost:8080/https://api.deezer.com/artist/${artistId}`);
-      artist.value = artistResponse.data;
-  
-      // Obtener álbumes del artista (limitar a los 5 primeros)
-      const albumsResponse = await axios.get(`http://localhost:8080/https://api.deezer.com/artist/${artistId}/albums`);
-      albums.value = albumsResponse.data.data.slice(0, 5);
-    } catch (error) {
-      console.error('Error al obtener los datos del artista:', error);
-    }
-  };
-  
-  onMounted(() => {
-    const artistId = route.params.id;
-    obtenerDatosDelArtista(artistId);
-  });
-  </script>
-  
-  <style scoped>
-  .artist-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-  }
-  
-  .artist-image {
-    width: 200px;
-    border-radius: 50%;
-    margin-bottom: 20px;
-  }
-  
-  .artist-details {
-    text-align: center;
-  }
-  
-  .artist-details strong {
-    font-size: 1.5em;
-    margin-bottom: 10px;
-    display: block;
-  }
-  
-  .artist-details p {
-    margin: 5px 0;
-  }
-  
-  h2 {
-    font-size: 1.5em;
-    margin-top: 30px;
-  }
-  
-  .albums-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 20px;
-  }
-  
-  .album-card {
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    width: 150px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-  }
-  
-  .album-card:hover {
-    transform: scale(1.05);
-  }
-  
-  .album-cover {
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  
-  p {
-    margin: 5px 0;
-  }
-  </style>
-  
+  </div>
+</template>
+
+<style scoped>
+.artist-details {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #f8c6c6;
+  padding: 20px;
+  border-radius: 10px;
+}
+.artist-image {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.song-list {
+  margin-top: 20px;
+}
+.song-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.song-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+.song-item:hover {
+  background-color: #f0f0f0;
+}
+.song-cover {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+}
+</style>

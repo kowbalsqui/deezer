@@ -3,46 +3,51 @@
     <h1>Mi Playlist</h1>
     <div class="playlist" v-if="playlist.length > 0">
       <div v-for="song in playlist" :key="song.id" class="playlist-item">
-        <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" />
+        <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" @click="playSong(song)" />
         <div class="song-details">
           <strong>{{ song.title }}</strong>
           <p>{{ song.artist.name }}</p>
           <p>{{ song.album.title }}</p>
-          <button @click="removeSongFromPlaylist(song.id)" class="btn-delete">Eliminar</button>
-          <button class="btn-play" @click="playPreview(song)">Escuchar Preview</button>
         </div>
+        <!-- Botón de papelera para eliminar la canción -->
+        <button @click="removeSongFromPlaylist(song.id)" class="btn-delete">
+          <i class="fas fa-trash"></i> <!-- Ícono de papelera -->
+        </button>
       </div>
     </div>
     <p v-else>No hay canciones en la playlist</p>
 
     <!-- Reproductor Mejorado -->
     <div v-if="currentSong" class="music-player">
-      <img :src="currentSong.album.cover" alt="Portada del álbum" class="player-cover" />
-      <div class="player-details">
-        <strong>{{ currentSong.title }}</strong>
-        <p>{{ currentSong.artist.name }}</p>
+      <div class="player-left">
+        <img :src="currentSong.album.cover" alt="Portada de la canción" class="player-cover" />
       </div>
-      
-      <!-- Controles -->
-      <div class="player-controls">
-        <button @click="prevSong">⏮</button>
-        <button @click="togglePlay">{{ isPlaying ? '⏸' : '▶' }}</button>
-        <button @click="nextSong">⏭</button>
+      <div class="player-center">
+        <div class="player-info">
+          <strong>{{ currentSong.title }}</strong>
+          <p>{{ currentSong.artist.name }}</p>
+        </div>
+        <input type="range" min="0" :max="audioDuration" step="0.1" v-model="audioTime" @input="seekAudio" class="progress-bar" />
+        <div class="player-controls">
+          <button @click="prevSong">⏮</button>
+          <button @click="togglePlay">{{ isPlaying ? '⏸' : '▶' }}</button>
+          <button @click="nextSong">⏭</button>
+        </div>
       </div>
-
-      <!-- Barra de Progreso -->
-      <input type="range" v-model="progress" @input="seekAudio" class="progress-bar" />
-
-      <!-- Control de Volumen -->
-      <input type="range" min="0" max="1" step="0.1" v-model="volume" @input="setVolume" class="volume-bar" />
-
-      <audio ref="audioPlayer" :src="currentSong.preview" @timeupdate="updateProgress" @ended="nextSong" controls></audio>
+      <div class="player-right">
+        <button class="player-fav" @click="toggleFavorite(currentSong)">
+          <span :class="{ favorited: removeSongFromPlaylist(currentSong) }">🗑️</span>
+          
+        </button>
+      </div>
+      <!-- Audio (oculto, se controla por código) -->
+      <audio ref="audio" :src="currentSong.preview" @timeupdate="updateTime" @ended="nextSong" autoplay></audio>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from "vue";
 import { useFavoritesStore } from "../stores/favorito.js"; 
 
 const favoritesStore = useFavoritesStore(); 
@@ -50,65 +55,66 @@ const playlist = computed(() => favoritesStore.playlist);
 
 const currentSong = ref(null);
 const isPlaying = ref(false);
-const progress = ref(0);
-const volume = ref(1);
-const audioPlayer = ref(null);
+const audioTime = ref(0);
+const audioDuration = ref(0);
+const audio = ref(null);
 
 const removeSongFromPlaylist = (songId) => {
   favoritesStore.removeSong(songId);
 };
 
-const playPreview = (song) => {
+const playSong = (song) => {
   currentSong.value = song;
   isPlaying.value = true;
   setTimeout(() => {
-    audioPlayer.value.play();
+    audio.value.play();
   }, 100);
 };
 
 const togglePlay = () => {
-  if (audioPlayer.value.paused) {
-    audioPlayer.value.play();
+  if (audio.value.paused) {
+    audio.value.play();
     isPlaying.value = true;
   } else {
-    audioPlayer.value.pause();
+    audio.value.pause();
     isPlaying.value = false;
   }
-};
-
-const updateProgress = () => {
-  progress.value = (audioPlayer.value.currentTime / audioPlayer.value.duration) * 100;
-};
-
-const seekAudio = () => {
-  audioPlayer.value.currentTime = (progress.value / 100) * audioPlayer.value.duration;
-};
-
-const setVolume = () => {
-  audioPlayer.value.volume = volume.value;
 };
 
 const nextSong = () => {
   const currentIndex = playlist.value.findIndex(song => song.id === currentSong.value.id);
   if (currentIndex < playlist.value.length - 1) {
-    playPreview(playlist.value[currentIndex + 1]);
+    playSong(playlist.value[currentIndex + 1]);
   }
 };
 
 const prevSong = () => {
   const currentIndex = playlist.value.findIndex(song => song.id === currentSong.value.id);
   if (currentIndex > 0) {
-    playPreview(playlist.value[currentIndex - 1]);
+    playSong(playlist.value[currentIndex - 1]);
   }
 };
 
-watch(currentSong, (newSong) => {
-  if (newSong) {
-    setTimeout(() => {
-      audioPlayer.value.play();
-    }, 100);
+const updateTime = () => {
+  audioTime.value = audio.value.currentTime;
+  audioDuration.value = audio.value.duration;
+};
+
+const seekAudio = () => {
+  audio.value.currentTime = audioTime.value;
+};
+
+const toggleFavorite = (song) => {
+  if (isFavorite(song)) {
+    favoritesStore.removeSong(song.id);
+  } else {
+    favoritesStore.addSong(song);
   }
-});
+};
+
+const isFavorite = (song) => {
+  return favoritesStore.playlist.some((favSong) => favSong.id === song.id);
+};
 </script>
 
 <style scoped>
@@ -136,6 +142,7 @@ watch(currentSong, (newSong) => {
   height: auto;
   border-radius: 10px;
   margin-right: 20px;
+  cursor: pointer; /* Hace que la imagen sea clickeable */
 }
 
 .song-details {
@@ -145,81 +152,86 @@ watch(currentSong, (newSong) => {
   gap: 10px;
 }
 
+/* Botón de papelera */
 .btn-delete {
-  background-color: #dc3545;
-  color: white;
+  background-color: transparent;
   border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
+  color: #dc3545;
   cursor: pointer;
-  transition: background-color 0.2s;
+  font-size: 18px;
 }
 
-.btn-delete:hover {
-  background-color: #c82333;
-}
-
-.btn-play {
-  background-color: #007bff;
-}
-
-.btn-play:hover {
-  background-color: #0056b3;
+.btn-delete i {
+  font-size: 20px; /* Tamaño del ícono de la papelera */
 }
 
 /* Estilos del reproductor */
 .music-player {
   position: fixed;
-  bottom: 50px; /* Justo encima del footer */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 800px;
-  background: #222; /* Fondo oscuro para que combine con el footer */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #333;
   color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
+  padding: 10px;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
-  border-radius: 10px;
+}
+
+.player-left {
+  flex: 0.2;
 }
 
 .player-cover {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 5px;
 }
 
-.player-details {
-  flex: 1;
-  text-align: left;
+.player-center {
+  flex: 0.6;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  margin: 5px 0;
 }
 
 .player-controls {
   display: flex;
-  align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 
-.progress-bar, .volume-bar {
-  width: 100px;
-  background-color: #007bff;
-}
-
-.progress-bar::-webkit-slider-runnable-track {
-  background: #007bff;
-  height: 5px;
-  border-radius: 10px;
-}
-
-.progress-bar::-webkit-slider-thumb {
-  background: white;
-  border-radius: 50%;
+.player-controls button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
   cursor: pointer;
+  transition: transform 0.2s;
 }
 
-.volume-bar {
-  width: 80px;
+.player-controls button:hover {
+  transform: scale(1.2);
+}
+
+.player-right {
+  flex: 0.2;
+  text-align: right;
+}
+
+.player-fav {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.player-fav:hover {
+  transform: scale(1.2);
 }
 </style>

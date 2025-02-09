@@ -1,82 +1,36 @@
-<template>
-  <div class="container">
-    <!-- Carousel -->
-    <carrusel />
-    <br>
-    <br>
-    <!-- Buscador de Canciones -->
-    <div class="search-bar">
-      <input v-model="searchQuery" @keyup.enter="buscarCanciones" placeholder="Buscar canciones..." />
-      <button @click="buscarCanciones">Buscar</button>
-    </div>
-
-    <!-- Resultados de la Búsqueda -->
-    <div v-if="searchResults.length > 0" class="search-results">
-      <h2>Resultados de la Búsqueda</h2>
-      <div class="playlist">
-        <div v-for="song in searchResults" :key="song.id" class="playlist-item">
-          <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" loading="lazy" />
-          <div class="song-details">
-            <strong>{{ song.title }}</strong>
-            <p>{{ song.artist.name }}</p>
-            <p>{{ song.album.title }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top 5 Álbumes Más Escuchados -->
-    <h1>Top Álbumes Más Escuchados</h1>
-    <div class="grid">
-      <div v-for="album in topAlbums" :key="album.id" class="grid-item">
-        <img :src="album.cover" alt="Portada del álbum" class="album-cover" loading="lazy" />
-        <div class="album-details">
-          <strong>{{ album.title }}</strong>
-          <p>{{ album.artist.name }}</p>
-        </div>
-      </div>
-    </div>
-
-    <br>
-
-    <!-- Top 5 Artistas Más Escuchados -->
-    <h2>Top Artistas Más Escuchados</h2>
-    <div class="grid">
-      <div v-for="artist in topArtists" :key="artist.id" class="grid-item" @click="verArtista(artist.id)">
-        <img :src="artist.picture" alt="Imagen del artista" class="artist-picture" loading="lazy" />
-        <div class="artist-details">
-          <strong>{{ artist.name }}</strong>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import carrusel from '../components/carrusel.vue';
 import { useFavoritesStore } from '../stores/favorito.js';
+import { useMainStore } from '@/stores/busqueda';
 
 const searchQuery = ref('');
 const topAlbums = ref([]);
 const topArtists = ref([]);
-const searchResults = ref([]);
+const searchResults = ref({ songs: [], artists: [], albums: [] });
 const favoritesStore = useFavoritesStore();
+const store = useMainStore();
 const router = useRouter();
 
-const buscarCanciones = async () => {
+const buscar = async () => {
   try {
-    const response = await axios.get(`http://localhost:8080/https://api.deezer.com/search?q=${searchQuery.value}`, {
-      headers: {
-        'x-requested-with': 'XMLHttpRequest'
-      }
-    });
-    searchResults.value = response.data.data;
+    const [songsResponse, artistsResponse, albumsResponse] = await Promise.all([
+      axios.get(`http://localhost:8080/https://api.deezer.com/search/track?q=${searchQuery.value}&limit=10`),
+      axios.get(`http://localhost:8080/https://api.deezer.com/search/artist?q=${searchQuery.value}&limit=10`),
+      axios.get(`http://localhost:8080/https://api.deezer.com/search/album?q=${searchQuery.value}&limit=10`)
+    ]);
+    
+    searchResults.value = {
+      songs: songsResponse.data.data,
+      artists: artistsResponse.data.data,
+      albums: albumsResponse.data.data
+    };
   } catch (error) {
-    console.error('Error al buscar las canciones:', error);
-    alert('Hubo un problema al buscar las canciones. Por favor, inténtalo de nuevo más tarde.');
+    console.error('Error al buscar:', error);
+    alert('Hubo un problema al realizar la búsqueda.');
   }
 };
 
@@ -95,115 +49,93 @@ const fetchTopAlbumsAndArtists = async () => {
   }
 };
 
-const verArtista = (artistId) => {
+const viewAlbumDetails = (album) => {
+  store.currentAlbum = album;
+  router.push({ name: 'AlbumDetails', params: { id: album.id } });
+};
+
+const viewArtist = (artistId) => {
   router.push({ name: 'Artist', params: { id: artistId } });
+};
+
+const viewSong = (song) => {
+  router.push({ name: 'SongDetails', params: { id: song.id }, query: { title: song.title, cover: song.album.cover, artist: song.artist.name } });
 };
 
 onMounted(fetchTopAlbumsAndArtists);
 </script>
 
-<style scoped>
-.container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+<template>
+  <div class="container text-center">
+    <carrusel />
+    <br>
+    <br>
+    <div class="input-group mb-4 w-50 mx-auto">
+      <input v-model="searchQuery" @keyup.enter="buscar" class="form-control" placeholder="Buscar canciones, artistas o álbumes..." />
+      <button class="btn btn-primary" @click="buscar">Buscar</button>
+    </div>
 
-h1, h2 {
-  color: #007bff;
-  text-align: center;
-  font-family: 'Arial', sans-serif;
-}
+    <div v-if="searchResults.songs.length || searchResults.artists.length || searchResults.albums.length" class="search-results">
+      <h2 class="my-3">Resultados de la Búsqueda</h2>
 
-.search-bar {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
+      <div class="grid-container">
+        <div v-if="searchResults.artists.length">
+          <h3>Artistas</h3>
+          <div class="row row-cols-5 g-3">
+            <div v-for="artist in searchResults.artists" :key="artist.id" class="col" @click="viewArtist(artist.id)">
+              <div class="card p-2">
+                <img :src="artist.picture_medium" alt="Imagen del artista" class="card-img-top rounded-circle" />
+                <p class="card-text mt-2"><strong>{{ artist.name }}</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-.search-bar input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  max-width: 500px;
-  font-size: 16px;
-}
+        <div v-if="searchResults.songs.length">
+          <h3>Canciones</h3>
+          <div class="row row-cols-5 g-3">
+            <div v-for="song in searchResults.songs" :key="song.id" class="col" @click="viewSong(song)">
+              <div class="card p-2">
+                <img :src="song.album.cover_medium" alt="Portada del álbum" class="card-img-top" />
+                <p class="card-text mt-2"><strong>{{ song.title }}</strong> - {{ song.artist.name }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-.search-bar button {
-  padding: 10px 20px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
+        <div v-if="searchResults.albums.length">
+          <h3>Álbumes</h3>
+          <div class="row row-cols-5 g-3">
+            <div v-for="album in searchResults.albums" :key="album.id" class="col" @click="viewAlbumDetails(album)">
+              <div class="card p-2">
+                <img :src="album.cover_medium" alt="Portada del álbum" class="card-img-top" />
+                <p class="card-text mt-2"><strong>{{ album.title }}</strong> - {{ album.artist.name }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-.grid {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 20px;
-  justify-content: center;
-}
+    <h1 class="my-4">Top Álbumes Más Escuchados</h1>
+    <div class="d-flex overflow-auto pb-3">
+      <div v-for="album in topAlbums" :key="album.id" class="card mx-2 p-2" style="width: 12rem;" @click="viewAlbumDetails(album)">
+        <img :src="album.cover_medium" alt="Portada del álbum" class="card-img-top" loading="lazy" />
+        <div class="card-body text-center">
+          <strong>{{ album.title }}</strong>
+          <p class="card-text">{{ album.artist.name }}</p>
+        </div>
+      </div>
+    </div>
 
-.grid-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-  background: white;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.grid-item:hover {
-  transform: scale(1.05);
-  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.album-cover {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  transition: transform 0.2s;
-}
-
-.grid-item:hover .album-cover {
-  transform: scale(1.05);
-}
-
-.artist-picture {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 50%;
-  margin-bottom: 10px;
-  transition: transform 0.2s;
-}
-
-.grid-item:hover .artist-picture {
-  transform: scale(1.05);
-}
-
-.album-details, .artist-details {
-  text-align: center;
-  font-family: 'Arial', sans-serif;
-}
-
-.album-details strong, .artist-details strong {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 18px;
-  color: #333;
-}
-
-.artist-details strong {
-  font-size: 16px;
-}
-</style>
+    <h2 class="my-4">Top Artistas Más Escuchados</h2>
+    <div class="d-flex overflow-auto pb-3">
+      <div v-for="artist in topArtists" :key="artist.id" class="card mx-2 p-2" style="width: 12rem;" @click="viewArtist(artist.id)">
+        <img :src="artist.picture_medium" alt="Imagen del artista" class="card-img-top rounded-circle" loading="lazy" />
+        <div class="card-body text-center">
+          <strong>{{ artist.name }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

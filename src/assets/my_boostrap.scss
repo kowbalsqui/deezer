@@ -1,4 +1,31 @@
-$primary: #06090c;
+// Variables personalizadas
+$primary: #06090c; // Tu color primario
+$background-color: #ffc0cb; // Fondo rosado
 
-
+// Importar Bootstrap
 @import "bootstrap/scss/bootstrap";
+
+// Estilos personalizados
+body {
+  background-color: $background-color; // Aplicar el fondo rosado
+  min-height: 100vh; // Asegurar que cubra toda la altura de la pantalla
+}
+
+nav {
+  border: 1px solid gray;
+}
+
+$hover-bg-color: #007bff;
+$hover-text-color: #ffffff;
+
+li {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+
+  &:hover {
+    background-color: $hover-bg-color;
+    color: $hover-text-color;
+    font-weight: bold;
+  }
+}
