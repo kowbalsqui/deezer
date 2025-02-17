@@ -6,6 +6,7 @@ import SearchView from '../views/SearchView.vue';
 import ArtistView from '../views/ArtistView.vue';
 import SongDetailsView from '../views/SongDetailsView.vue';
 import AlbumDetailsView from '../views/AlbumDetailsView.vue'; // Importa la vista de detalles del álbum
+import LoginView from "../views/LoginView.vue";
 
 const routes = [
   {
@@ -37,6 +38,11 @@ const routes = [
     path: '/album/:id',
     name: 'AlbumDetails',
     component: AlbumDetailsView
+  },
+  {
+    path: "/login", 
+    name: "Login", 
+    component: LoginView
   },
 ];
 
