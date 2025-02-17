@@ -1,53 +1,78 @@
 <template>
-  <div class="search-view">
-    <h1>Búsqueda de canciones en Deezer</h1>
+  <div class="container text-center mt-4">
+    <h1 class="display-5 text-primary">Búsqueda de canciones en Deezer</h1>
     <SearchBar @results="handleResults" />
 
     <!-- Tarjetas de canciones -->
-    <div class="song-cards" v-if="songs.length > 0">
-      <div v-for="song in songs" :key="song.id" class="song-card">
-        <!-- Imagen de fondo de la tarjeta con el corazón en la esquina superior derecha -->
-        <div class="card-bg" :style="{ backgroundImage: `url(${song.album.cover_medium})` }" @click="playSong(song)">
-          <button class="heart-icon" @click.stop="toggleFavorite(song)">
-            <span :class="{ favorited: isFavorite(song) }">❤️</span>
-          </button>
-        </div>
-        <!-- Información de la canción -->
-        <div class="card-info">
-          <strong>{{ song.title }}</strong>
-          <p>{{ song.artist.name }}</p>
+    <div v-if="songs.length > 0" class="row row-cols-2 row-cols-md-4 g-3 mt-3">
+      <div v-for="song in songs" :key="song.id" class="col">
+        <div class="card shadow-sm border-info h-100 text-center position-relative">
+          <div class="position-relative">
+            <img 
+              :src="song.album.cover_medium" 
+              alt="Portada del álbum" 
+              class="card-img-top img-fluid" 
+              @click="playSong(song)" 
+            />
+            <button class="btn btn-outline-danger position-absolute top-0 end-0 m-2 p-1" @click.stop="toggleFavorite(song)">
+              <span :class="{ 'text-danger': isFavorite(song) }">❤️</span>
+            </button>
+          </div>
+          <div class="card-body">
+            <strong>{{ song.title }}</strong>
+            <p class="text-muted">{{ song.artist.name }}</p>
+          </div>
         </div>
       </div>
     </div>
-    <p v-else class="no-results">No hay resultados para mostrar</p>
 
-    <!-- Reproductor de música en la parte inferior -->
-    <div v-if="currentSong" class="music-player">
-      <div class="player-left">
-        <img :src="currentSong.album.cover_medium" alt="Portada de la canción" class="player-cover" />
-      </div>
-      <div class="player-center">
-        <div class="player-info">
-          <strong>{{ currentSong.title }}</strong>
-          <p>{{ currentSong.artist.name }}</p>
+    <p v-else class="text-center text-muted mt-3">No hay resultados para mostrar</p>
+
+    <!-- Reproductor de música -->
+    <div v-if="currentSong" class="bg-dark text-white fixed-bottom p-3 shadow-lg">
+      <div class="d-flex align-items-center justify-content-between">
+        <!-- Portada e información -->
+        <div class="d-flex align-items-center">
+          <img 
+            :src="currentSong.album.cover_medium" 
+            alt="Portada de la canción" 
+            class="rounded-circle me-3" 
+            style="width: 60px; height: 60px;"
+          />
+          <div>
+            <strong>{{ currentSong.title }}</strong>
+            <p class="text-muted mb-0">{{ currentSong.artist.name }}</p>
+          </div>
         </div>
-        <input type="range" min="0" :max="audioDuration" step="0.1" v-model="audioTime" @input="seekAudio" class="progress-bar" />
-        <div class="player-controls">
-          <button @click="prevSong">⏮</button>
-          <button @click="togglePlay">{{ isPlaying ? '⏸' : '▶' }}</button>
-          <button @click="nextSong">⏭</button>
+
+        <!-- Barra de progreso -->
+        <div class="text-center w-50">
+          <input type="range" min="0" :max="audioDuration" step="0.1" v-model="audioTime" @input="seekAudio" class="form-range w-100" />
+          
+          <!-- Controles del reproductor -->
+          <div class="btn-group">
+            <button @click="prevSong" class="btn btn-outline-secondary btn-sm">
+              ⏮
+            </button>
+            <button @click="togglePlay" class="btn btn-primary btn-sm">
+              {{ isPlaying ? '⏸' : '▶' }}
+            </button>
+            <button @click="nextSong" class="btn btn-outline-secondary btn-sm">
+              ⏭
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="player-right">
-        <button class="player-fav" @click="toggleFavorite(currentSong)">
-          <span :class="{ favorited: isFavorite(currentSong) }">❤️</span>
+
+        <!-- Botón de favorito/eliminar -->
+        <button class="btn btn-outline-danger btn-sm" @click="toggleFavorite(currentSong)">
+          <i class="fas fa-trash"></i>
         </button>
       </div>
-      <!-- Audio (oculto, se controla por código) -->
       <audio ref="audio" :src="currentSong.preview" @timeupdate="updateTime" @ended="nextSong" autoplay></audio>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from "vue";
@@ -123,125 +148,4 @@ const isFavorite = (song) => {
 };
 </script>
 
-<style scoped>
-/* Contenedor principal */
-.search-view {
-  padding: 20px;
-  text-align: center;
-}
 
-/* Estilos de las tarjetas */
-.song-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-}
-
-.song-card {
-  width: 200px;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  cursor: pointer;
-}
-
-.card-bg {
-  width: 100%;
-  height: 150px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-}
-
-.heart-icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-}
-
-.heart-icon:hover {
-  transform: scale(1.2);
-}
-
-.favorited {
-  color: red;
-}
-
-/* Estilos del reproductor */
-.music-player {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #333;
-  color: white;
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.player-left {
-  flex: 0.2;
-}
-
-.player-cover {
-  width: 60px;
-  height: 60px;
-  border-radius: 5px;
-}
-
-.player-center {
-  flex: 0.6;
-  text-align: center;
-}
-
-.progress-bar {
-  width: 100%;
-  margin: 5px 0;
-}
-
-.player-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.player-controls button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.player-controls button:hover {
-  transform: scale(1.2);
-}
-
-.player-right {
-  flex: 0.2;
-  text-align: right;
-}
-
-.player-fav {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.player-fav:hover {
-  transform: scale(1.2);
-}
-</style>

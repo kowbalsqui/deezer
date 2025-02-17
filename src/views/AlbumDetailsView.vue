@@ -63,7 +63,6 @@ onMounted(fetchAlbumDetails);
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
-  background-color: #f8c6c6;
   padding: 20px;
   border-radius: 10px;
 }
@@ -86,14 +85,12 @@ onMounted(fetchAlbumDetails);
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: white;
   padding: 10px;
   border-radius: 8px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
 }
 .track-item:hover {
-  background-color: #f0f0f0;
+  background-color: #141111;
 }
 .track-cover {
   width: 80px;

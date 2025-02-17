@@ -1,55 +1,166 @@
-// Import Bootstrap y personalización de variables
 @import "bootstrap/scss/functions";
 @import "bootstrap/scss/variables";
 
-// Personalización de colores
-$primary: #165027;
-$secondary: #174b79;
-$danger: #dc3545;
-$warning: #ffc107;
-$light: #f8f9fa;
+// Definir colores futuristas
+$primary: #00ffc8;
+$secondary: #1f1f1f;
+$dark-bg: #0a0a0a;
+$light-text: #ffffff;
+$neon-pink: #ff007f;
+$neon-blue: #00aaff;
+$neon-purple: #8000ff;
 
-// Sobrescribir variables de Bootstrap
 $theme-colors: (
   "primary": $primary,
   "secondary": $secondary,
-  "danger": $danger,
-  "warning": $warning,
-  "light": $light,
+  "dark": $dark-bg,
+  "light": $light-text,
+  "danger": $neon-pink,
+  "info": $neon-blue,
+  "warning": $neon-purple,
 );
 
-// Importar Bootstrap con los nuevos colores
 @import "bootstrap/scss/bootstrap";
 
-// Estilos personalizados
-.custom-input {
-  border: 2px solid $primary;
-  border-radius: 8px;
+// Estilos generales
+body {
+  background: radial-gradient(circle, #050505 20%, #0d0d0d 80%);
+  color: $light-text;
+  font-family: 'Orbitron', sans-serif;
+}
+
+// Sidebar futurista
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(180deg, #111, #222);
+  box-shadow: 4px 0 15px rgba(0, 255, 200, 0.8);
+}
+
+.sidebar .nav-link {
+  color: $primary;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover {
+  background: rgba(0, 255, 200, 0.2);
+  box-shadow: 0px 0px 15px $primary;
+  border-radius: 5px;
+}
+
+// Contenido principal
+.container-main {
+  margin-left: 260px;
+  padding: 20px;
+}
+
+// Botones futuristas con animación
+.btn-custom {
+  background: linear-gradient(90deg, $neon-blue, $neon-pink);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0px 0px 10px rgba(0, 255, 200, 0.5);
+  animation: pulseGlow 1.5s infinite alternate;
+}
+
+.btn-custom:hover {
+  background: linear-gradient(90deg, $neon-pink, $neon-blue);
+  box-shadow: 0px 0px 20px rgba(255, 0, 127, 0.8);
+}
+
+// Tarjetas futuristas mejoradas
+.artist-card, .album-card, .song-card {
+  background: linear-gradient(135deg, rgba(0, 255, 200, 0.2), rgba(255, 0, 127, 0.2));
+  border: 3px solid rgba(0, 255, 200, 0.9);
+  border-radius: 15px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0px 0px 20px rgba(0, 255, 200, 0.6);
+  text-align: center;
+}
+
+.artist-card:hover, .album-card:hover, .song-card:hover {
+  transform: scale(1.1);
+  border-color: $neon-pink;
+  box-shadow: 0px 0px 25px rgba(255, 0, 127, 0.8);
+}
+
+.artist-card img, .album-card img, .song-card img {
+  border-radius: 12px;
+  box-shadow: 0px 0px 15px rgba(0, 255, 200, 0.7);
+}
+
+// Títulos con efecto neón
+.artist-name, .album-name, .song-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: $primary;
+  text-shadow: 0px 0px 15px rgba(0, 255, 200, 1);
+  animation: flicker 1.5s infinite alternate;
+}
+
+// Vista de detalles mejorada
+.details-container {
+  background: linear-gradient(135deg, rgba(10, 10, 20, 0.9), rgba(0, 0, 0, 0.9));
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0px 0px 30px rgba(0, 255, 200, 0.9);
+  text-align: center;
+  animation: neonBorder 2s infinite alternate;
+}
+
+.details-container img {
+  border-radius: 15px;
+  box-shadow: 0px 0px 25px rgba(255, 0, 127, 0.8);
+}
+
+// Tracklist y grid mejorado
+.tracklist {
+  margin-top: 20px;
+}
+
+.track-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+  gap: 15px;
+  margin-top: 10px;
   padding: 10px;
 }
 
-.btn-custom {
-  background-color: $primary;
-  color: white;
+.track-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 255, 200, 0.1);
+  border: 2px solid rgba(0, 255, 200, 0.8);
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0px 0px 15px rgba(0, 255, 200, 0.5);
+  text-align: center;
+}
+
+.track-item:hover {
+  transform: scale(1.08);
+  border-color: $neon-pink;
+  box-shadow: 0px 0px 20px rgba(255, 0, 127, 0.7);
+}
+
+.track-cover {
+  width: 80px;
+  height: 80px;
   border-radius: 8px;
-  &:hover {
-    background-color: darken($primary, 10%);
-  }
+  box-shadow: 0px 0px 10px rgba(0, 255, 200, 0.5);
 }
 
-.custom-card {
-  transition: transform 0.3s ease;
-  cursor: pointer;
-  border-radius: 10px;
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+// Animaciones de efecto neón
+@keyframes neonBorder {
+  from {
+    box-shadow: 0px 0px 15px rgba(0, 255, 200, 0.6);
   }
-}
-
-.custom-card-section {
-  background: $light;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  to {
+    box-shadow: 0px 0px 25px rgba(0, 255, 200, 1);
+  }
 }

@@ -33,16 +33,17 @@ onMounted(fetchArtistDetails);
 </script>
 
 <template>
-  <div v-if="artist" class="artist-details">
+  <div v-if="artist" class="album-details">
     <h1>{{ artist.name }}</h1>
-    <img :src="artist.picture_big" alt="Imagen del artista" class="artist-image" />
-    
-    <div class="song-list">
+    <img :src="artist.picture_big" alt="Imagen del artista" class="album-cover" />
+
+    <div class="tracklist">
       <h2>Canciones Populares</h2>
-      <div class="song-grid">
-        <div v-for="song in songs" :key="song.id" class="song-item" @click="viewSongDetails(song)" style="cursor: pointer;">
-          <img :src="song.album.cover" alt="Portada del álbum" class="song-cover" />
+      <div class="track-grid">
+        <div v-for="song in songs" :key="song.id" class="track-item" @click="viewSongDetails(song)">
+          <img :src="song.album.cover" alt="Portada del álbum" class="track-cover" />
           <p><strong>{{ song.title }}</strong></p>
+          <p>Duración: {{ song.duration }}s</p>
         </div>
       </div>
     </div>
@@ -50,43 +51,40 @@ onMounted(fetchArtistDetails);
 </template>
 
 <style scoped>
-.artist-details {
+.album-details {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
-  background-color: #f8c6c6;
   padding: 20px;
   border-radius: 10px;
 }
-.artist-image {
+.album-cover {
   width: 100%;
   max-width: 400px;
   border-radius: 10px;
   margin-bottom: 20px;
 }
-.song-list {
+.tracklist {
   margin-top: 20px;
 }
-.song-grid {
+.track-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-top: 10px;
 }
-.song-item {
+.track-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: white;
   padding: 10px;
   border-radius: 8px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   cursor: pointer;
 }
-.song-item:hover {
-  background-color: #f0f0f0;
+.track-item:hover {
+  background-color: #141111;
 }
-.song-cover {
+.track-cover {
   width: 80px;
   height: 80px;
   border-radius: 8px;

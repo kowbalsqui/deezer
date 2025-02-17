@@ -66,23 +66,28 @@ onMounted(fetchTopAlbumsAndArtists);
 </script>
 
 <template>
-  <div class="container text-center mt-4">
+  <div class="container-fluid text-center mt-4">
     <carrusel />
-    <br>
+    
     <div class="input-group mb-4 w-50 mx-auto shadow-sm">
-      <input v-model="searchQuery" @keyup.enter="buscar" class="form-control border-primary" placeholder="Buscar canciones, artistas o álbumes..." />
+      <input 
+        v-model="searchQuery" 
+        @keyup.enter="buscar" 
+        class="form-control border-primary" 
+        placeholder="Buscar canciones, artistas o álbumes..."
+      />
       <button class="btn btn-primary" @click="buscar">Buscar</button>
     </div>
 
     <div v-if="searchResults.songs.length || searchResults.artists.length || searchResults.albums.length" class="search-results">
       <h2 class="my-3 text-success">Resultados de la Búsqueda</h2>
-      <div class="grid-container">
+      <div class="container-fluid">
         <div v-if="searchResults.artists.length" class="bg-light p-3 rounded">
           <h3 class="text-primary">Artistas</h3>
-          <div class="row row-cols-5 g-3">
+          <div class="row row-cols-2 row-cols-md-4 g-3">
             <div v-for="artist in searchResults.artists" :key="artist.id" class="col" @click="viewArtist(artist.id)">
               <div class="card p-2 shadow-sm border-primary">
-                <img :src="artist.picture_medium" alt="Imagen del artista" class="card-img-top rounded-circle" />
+                <img :src="artist.picture_medium" alt="Imagen del artista" class="card-img-top rounded-circle img-fluid" />
                 <p class="card-text mt-2"><strong>{{ artist.name }}</strong></p>
               </div>
             </div>
@@ -91,10 +96,10 @@ onMounted(fetchTopAlbumsAndArtists);
 
         <div v-if="searchResults.songs.length" class="bg-light p-3 rounded mt-4">
           <h3 class="text-danger">Canciones</h3>
-          <div class="row row-cols-5 g-3">
+          <div class="row row-cols-2 row-cols-md-4 g-3">
             <div v-for="song in searchResults.songs" :key="song.id" class="col" @click="viewSong(song)">
               <div class="card p-2 shadow-sm border-danger">
-                <img :src="song.album.cover_medium" alt="Portada del álbum" class="card-img-top" />
+                <img :src="song.album.cover_medium" alt="Portada del álbum" class="card-img-top img-fluid" />
                 <p class="card-text mt-2"><strong>{{ song.title }}</strong> - {{ song.artist.name }}</p>
               </div>
             </div>
@@ -103,10 +108,10 @@ onMounted(fetchTopAlbumsAndArtists);
 
         <div v-if="searchResults.albums.length" class="bg-light p-3 rounded mt-4">
           <h3 class="text-warning">Álbumes</h3>
-          <div class="row row-cols-5 g-3">
+          <div class="row row-cols-2 row-cols-md-4 g-3">
             <div v-for="album in searchResults.albums" :key="album.id" class="col" @click="viewAlbumDetails(album)">
               <div class="card p-2 shadow-sm border-warning">
-                <img :src="album.cover_medium" alt="Portada del álbum" class="card-img-top" />
+                <img :src="album.cover_medium" alt="Portada del álbum" class="card-img-top img-fluid" />
                 <p class="card-text mt-2"><strong>{{ album.title }}</strong> - {{ album.artist.name }}</p>
               </div>
             </div>
@@ -118,7 +123,7 @@ onMounted(fetchTopAlbumsAndArtists);
     <h1 class="my-4 text-primary">Top Álbumes Más Escuchados</h1>
     <div class="d-flex overflow-auto pb-3">
       <div v-for="album in topAlbums" :key="album.id" class="card mx-2 p-2 shadow-sm" style="width: 12rem;" @click="viewAlbumDetails(album)">
-        <img :src="album.cover_medium" alt="Portada del álbum" class="card-img-top rounded" loading="lazy" />
+        <img :src="album.cover_medium" alt="Portada del álbum" class="card-img-top rounded img-fluid" loading="lazy" />
         <div class="card-body text-center">
           <strong>{{ album.title }}</strong>
           <p class="card-text text-muted">{{ album.artist.name }}</p>
@@ -129,7 +134,7 @@ onMounted(fetchTopAlbumsAndArtists);
     <h2 class="my-4 text-secondary">Top Artistas Más Escuchados</h2>
     <div class="d-flex overflow-auto pb-3">
       <div v-for="artist in topArtists" :key="artist.id" class="card mx-2 p-2 shadow-sm" style="width: 12rem;" @click="viewArtist(artist.id)">
-        <img :src="artist.picture_medium" alt="Imagen del artista" class="card-img-top rounded-circle" loading="lazy" />
+        <img :src="artist.picture_medium" alt="Imagen del artista" class="card-img-top rounded-circle img-fluid" loading="lazy" />
         <div class="card-body text-center">
           <strong>{{ artist.name }}</strong>
         </div>
@@ -137,3 +142,4 @@ onMounted(fetchTopAlbumsAndArtists);
     </div>
   </div>
 </template>
+

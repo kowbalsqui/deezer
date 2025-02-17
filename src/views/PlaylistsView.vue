@@ -1,46 +1,63 @@
 <template>
-  <div>
-    <h1>Mi Playlist</h1>
-    <div class="playlist" v-if="playlist.length > 0">
-      <div v-for="song in playlist" :key="song.id" class="playlist-item">
-        <img :src="song.album.cover" alt="Portada del álbum" class="album-cover" @click="playSong(song)" />
-        <div class="song-details">
-          <strong>{{ song.title }}</strong>
-          <p>{{ song.artist.name }}</p>
-          <p>{{ song.album.title }}</p>
+  <div class="container mt-4">
+    <h1 class="text-center text-primary">Mi Playlist</h1>
+
+    <div v-if="playlist.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      <div v-for="song in playlist" :key="song.id" class="col">
+        <div class="card border-primary shadow-sm p-3">
+          <img 
+            :src="song.album.cover" 
+            alt="Portada del álbum" 
+            class="card-img-top rounded img-fluid"
+            @click="playSong(song)" 
+          />
+          <div class="card-body text-center">
+            <strong class="d-block">{{ song.title }}</strong>
+            <p class="text-muted mb-1">{{ song.artist.name }}</p>
+            <p class="text-muted">{{ song.album.title }}</p>
+            <button @click="removeSongFromPlaylist(song.id)" class="btn btn-danger btn-sm">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
         </div>
-        <!-- Botón de papelera para eliminar la canción -->
-        <button @click="removeSongFromPlaylist(song.id)" class="btn-delete">
-          <i class="fas fa-trash"></i> <!-- Ícono de papelera -->
-        </button>
       </div>
     </div>
-    <p v-else>No hay canciones en la playlist</p>
+
+    <p v-else class="text-center text-muted">No hay canciones en la playlist</p>
 
     <!-- Reproductor Mejorado -->
-    <div v-if="currentSong" class="music-player">
-      <div class="player-left">
-        <img :src="currentSong.album.cover" alt="Portada de la canción" class="player-cover" />
-      </div>
-      <div class="player-center">
-        <div class="player-info">
-          <strong>{{ currentSong.title }}</strong>
-          <p>{{ currentSong.artist.name }}</p>
+    <div v-if="currentSong" class="card border-info shadow-lg mt-4">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <img 
+            :src="currentSong.album.cover" 
+            alt="Portada de la canción" 
+            class="rounded-circle me-3" 
+            style="width: 80px; height: 80px;"
+          />
+          <div>
+            <strong>{{ currentSong.title }}</strong>
+            <p class="text-muted mb-0">{{ currentSong.artist.name }}</p>
+          </div>
         </div>
-        <input type="range" min="0" :max="audioDuration" step="0.1" v-model="audioTime" @input="seekAudio" class="progress-bar" />
-        <div class="player-controls">
-          <button @click="prevSong">⏮</button>
-          <button @click="togglePlay">{{ isPlaying ? '⏸' : '▶' }}</button>
-          <button @click="nextSong">⏭</button>
+
+        <div class="d-flex flex-column align-items-center">
+          <input type="range" min="0" :max="audioDuration" step="0.1" v-model="audioTime" @input="seekAudio" class="form-range w-100" />
+          <div class="btn-group">
+            <button @click="prevSong" class="btn btn-outline-secondary btn-sm">⏮</button>
+            <button @click="togglePlay" class="btn btn-outline-primary btn-sm">
+              {{ isPlaying ? '⏸' : '▶' }}
+            </button>
+            <button @click="nextSong" class="btn btn-outline-secondary btn-sm">⏭</button>
+          </div>
+        </div>
+
+        <div>
+          <button class="btn btn-outline-danger btn-sm" @click="toggleFavorite(currentSong)">
+            <i class="fas fa-trash"></i>
+          </button>
         </div>
       </div>
-      <div class="player-right">
-        <button class="player-fav" @click="toggleFavorite(currentSong)">
-          <span :class="{ favorited: removeSongFromPlaylist(currentSong) }">🗑️</span>
-          
-        </button>
-      </div>
-      <!-- Audio (oculto, se controla por código) -->
       <audio ref="audio" :src="currentSong.preview" @timeupdate="updateTime" @ended="nextSong" autoplay></audio>
     </div>
   </div>
@@ -116,122 +133,3 @@ const isFavorite = (song) => {
   return favoritesStore.playlist.some((favSong) => favSong.id === song.id);
 };
 </script>
-
-<style scoped>
-/* Estilos de la playlist */
-.playlist {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  justify-content: center;
-}
-
-.playlist-item {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 10px;
-  width: 100%;
-  background: white;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.album-cover {
-  width: 60px;
-  height: auto;
-  border-radius: 10px;
-  margin-right: 20px;
-  cursor: pointer; /* Hace que la imagen sea clickeable */
-}
-
-.song-details {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Botón de papelera */
-.btn-delete {
-  background-color: transparent;
-  border: none;
-  color: #dc3545;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.btn-delete i {
-  font-size: 20px; /* Tamaño del ícono de la papelera */
-}
-
-/* Estilos del reproductor */
-.music-player {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #333;
-  color: white;
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.player-left {
-  flex: 0.2;
-}
-
-.player-cover {
-  width: 60px;
-  height: 60px;
-  border-radius: 5px;
-}
-
-.player-center {
-  flex: 0.6;
-  text-align: center;
-}
-
-.progress-bar {
-  width: 100%;
-  margin: 5px 0;
-}
-
-.player-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.player-controls button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.player-controls button:hover {
-  transform: scale(1.2);
-}
-
-.player-right {
-  flex: 0.2;
-  text-align: right;
-}
-
-.player-fav {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.player-fav:hover {
-  transform: scale(1.2);
-}
-</style>

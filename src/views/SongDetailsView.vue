@@ -1,20 +1,23 @@
 <template>
-  <div v-if="song" class="song-container">
-    <h1 class="song-title">{{ song.title }}</h1>
-    <img :src="song.album.cover_big" alt="Portada del álbum" class="album-cover" />
-    <p><strong>Álbum:</strong> {{ song.album.title }}</p>
-    <p><strong>Duración:</strong> {{ formatDuration(song.duration) }}</p>
-    <audio :src="song.preview" controls class="audio-player"></audio>
+  <div v-if="song" class="container text-center mt-4">
+    <div class="card border-primary shadow-lg p-4 mx-auto" style="max-width: 600px;">
+      <h1 class="display-5 text-primary">{{ song.title }}</h1>
+      <img :src="song.album.cover_big" alt="Portada del álbum" class="img-fluid rounded shadow-lg mb-3" style="max-width: 300px;" />
+      <p><strong>Álbum:</strong> {{ song.album.title }}</p>
+      <p><strong>Duración:</strong> {{ formatDuration(song.duration) }}</p>
+      <audio :src="song.preview" controls class="w-100 mt-2"></audio>
 
-    <h2 class="artist-section">Artista</h2>
-    <div class="artist-info" v-if="artist">
-      <img :src="artist.picture_big" alt="Imagen del artista" class="artist-image" />
-      <p><strong>Nombre:</strong> {{ artist.name }}</p>
-      <button class="btn btn-primary" @click="viewArtist(artist.id)">Ver Artista</button>
+      <h2 class="mt-4 text-secondary">Artista</h2>
+      <div v-if="artist" class="card border-light shadow-sm p-3 mt-3">
+        <img :src="artist.picture_big" alt="Imagen del artista" class="img-fluid rounded-circle shadow-lg mb-2" style="width: 120px; height: 120px;" />
+        <p><strong>Nombre:</strong> {{ artist.name }}</p>
+        <button class="btn btn-outline-primary" @click="viewArtist(artist.id)">Ver Artista</button>
+      </div>
     </div>
   </div>
-  <p v-else class="loading-text">Cargando...</p>
+  <p v-else class="text-center text-muted mt-4">Cargando...</p>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -59,60 +62,3 @@ const viewArtist = (artistId) => {
 };
 </script>
 
-<style scoped>
-.song-container {
-  max-width: 600px;
-  margin: 40px auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.song-title {
-  color: #007bff;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.album-cover {
-  width: 100%;
-  max-width: 300px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  margin: 15px 0;
-}
-
-.audio-player {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.artist-section {
-  margin-top: 30px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-}
-
-.artist-info {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-top: 15px;
-}
-
-.artist-image {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.loading-text {
-  font-size: 18px;
-  color: #666;
-}
-</style>
